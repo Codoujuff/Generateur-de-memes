@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Mèmes</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #6c3483;
+        }
+        canvas {
+            border: 2px solid #333;
+            margin: 20px 0;
+            max-width: 100%;
+        }
+        input[type="file"], input[type="text"] {
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 80%;
+            max-width: 400px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #6c3483;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 400px;
+        }
+        button:hover {
+            background-color: #5a2d72;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Générateur de Mèmes</h1>
+    <div class="error-message" id="errorMessage">Veuillez sélectionner une image.</div>
+    <input type="file" id="imageUploader" accept="image/*"><br>
+    <input type="text" id="topText" placeholder="Texte du haut"><br>
+    <input type="text" id="bottomText" placeholder="Texte du bas"><br>
+    <button onclick="generateMeme()">Générer le Mème</button>
+    <button onclick="downloadMeme()" id="downloadButton" disabled>Télécharger</button>
+    <br>
+    <canvas id="memeCanvas" width="300" height="300"></canvas>
+
+    <script>
+        function generateMeme() {
+            const errorMessage = document.getElementById("errorMessage");
+            const imageUploader = document.getElementById("imageUploader");
+            const downloadButton = document.getElementById("downloadButton");
+
+            if (imageUploader.files.length === 0) {
+                errorMessage.textContent = "Veuillez sélectionner une image.";
+                errorMessage.style.display = "block";
+                return;
+            }
+
+            errorMessage.style.display = "none";
+
+            const canvas = document.getElementById("memeCanvas");
+            const context = canvas.getContext("2d");
+            const topText = document.getElementById("topText").value;
+            const bottomText = document.getElementById("bottomText").value;
+
+            const image = new Image();
+            image.onload = function () {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                canvas.width = image.width;
+                canvas.height = image.height;
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+                context.font = "30px Impact";
+                context.fillStyle = "white";
+                context.strokeStyle = "black";
+                context.lineWidth = 3;
+                context.textAlign = "center";
+
+                context.fillText(topText, canvas.width / 2, 50);
+                context.strokeText(topText, canvas.width / 2, 50);
+                context.fillText(bottomText, canvas.width / 2, canvas.height - 20);
+                context.strokeText(bottomText, canvas.width / 2, canvas.height - 20);
+
+                // Enable the download button after meme is generated
+                downloadButton.disabled = false;
+            };
+
+            image.src = URL.createObjectURL(imageUploader.files[0]);
+        }
+
+        function downloadMeme() {
+            const errorMessage = document.getElementById("errorMessage");
+            const imageUploader = document.getElementById("imageUploader");
+
+            if (imageUploader.files.length === 0) {
+                errorMessage.textContent = "Veuillez générer un mème avant de télécharger.";
+                errorMessage.style.display = "block";
+                return;
+            }
+
+            errorMessage.style.display = "none";
+
+            const canvas = document.getElementById("memeCanvas");
+            const link = document.createElement("a");
+            link.download = "meme.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+
+            const context = canvas.getContext("2d");
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            document.getElementById("topText").value = "";
+            document.getElementById("bottomText").value = "";
+            document.getElementById("imageUploader").value = "";
+
+            // Disable the download button after download
+            document.getElementById("downloadButton").disabled = true;
+        }
+    </script>
+</body>
+</html>
